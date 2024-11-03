@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import numpy as np
 from collections import Counter
 
 class NewsData:
@@ -57,74 +58,91 @@ class NewsData:
         
         return tf
 
-    def tf_bm25(self):
-        """Calculates the TF-BM25 score for each word in each document."""
+    def generate_vector(self, tf_dict, idf):
+        """Generates a vector from TF and IDF values for a document."""
+        return np.array([tf_dict.get(word, 0) * idf.get(word, 0) for word in idf.keys()])
+
+    def calculate_similarity(self, vectors, method="cosine"):
+        """Calculates pairwise similarity between document vectors."""
+        num_docs = len(vectors)
+        similarity_matrix = np.zeros((num_docs, num_docs))
+
+        for i in range(num_docs):
+            for j in range(i, num_docs):
+                if method == "cosine":
+                    similarity = self.cosine_similarity(vectors[i], vectors[j])
+                elif method == "dot_product":
+                    similarity = np.dot(vectors[i], vectors[j])
+                similarity_matrix[i][j] = similarity
+                similarity_matrix[j][i] = similarity  # Symmetric matrix
+
+        return similarity_matrix
+
+    def cosine_similarity(self, vec1, vec2):
+        """Calculates cosine similarity between two vectors."""
+        dot_product = np.dot(vec1, vec2)
+        norm_vec1 = np.linalg.norm(vec1)
+        norm_vec2 = np.linalg.norm(vec2)
+        return dot_product / (norm_vec1 * norm_vec2) if norm_vec1 != 0 and norm_vec2 != 0 else 0
+
+    def tfidf_vectors(self, method="tfidf"):
+        """Generates document vectors for each TF-IDF variant."""
         idf = self.compute_idf()
-        tf_bm25_dict = {}
+        vectors = []
 
-        for i, row in self.df.iterrows():
-            tf_bm25 = self.compute_tf_bm25(row["Article Body"])
-            tf_bm25_scores = {word: tf_bm25[word] * idf.get(word, 0) for word in tf_bm25}
-            tf_bm25_dict[i] = tf_bm25_scores
+        for _, row in self.df.iterrows():
+            if method == "tfidf":
+                tf = self.compute_tf(row["Article Body"])
+            elif method == "bm25":
+                tf = self.compute_tf_bm25(row["Article Body"])
+            elif method == "atf":
+                tf = self.compute_tf_atf(row["Article Body"])
 
-        return tf_bm25_dict
+            vector = self.generate_vector(tf, idf)
+            vectors.append(vector)
 
-    def tf_atf(self):
-        """Calculates the TF-ATF score for each word in each document."""
-        idf = self.compute_idf()
-        tf_atf_dict = {}
+        return np.array(vectors)
 
-        for i, row in self.df.iterrows():
-            tf_atf = self.compute_tf_atf(row["Article Body"])
-            tf_atf_scores = {word: tf_atf[word] * idf.get(word, 0) for word in tf_atf}
-            tf_atf_dict[i] = tf_atf_scores
 
-        return tf_atf_dict
 
 # Sample data
-data = {
-    "Category": ["Economy", "Politics", "Tech", "Health"],
-    "Short Description": [
-        "Stock markets react to the new policy changes.",
-        "The new tax bill has been introduced in Congress.",
-        "Innovative AI technology is shaping the future.",
-        "Recent health studies show promising results."
-    ],
-    "Article Body": [
-        "The stock market experienced significant changes after recent policy announcements affecting various sectors.",
-        "The newly introduced tax bill has sparked debates in Congress and could have long-term impacts.",
-        "Artificial Intelligence is evolving with applications in multiple industries including healthcare and finance.",
-        "A new health study indicates that certain lifestyle changes could lead to improved well-being and longevity."
-    ],
-    "Date": ["2024-11-01", "2024-11-02", "2024-11-03", "2024-11-04"],
-    "Link": [
-        "https://news.example.com/economy1",
-        "https://news.example.com/politics1",
-        "https://news.example.com/tech1",
-        "https://news.example.com/health1"
-    ]
-}
+# data = {
+#     "Category": ["Economy", "Politics", "Tech", "Health"],
+#     "Short Description": [
+#         "Stock markets react to the new policy changes.",
+#         "The new tax bill has been introduced in Congress.",
+#         "Innovative AI technology is shaping the future.",
+#         "Recent health studies show promising results."
+#     ],
+#     "Article Body": [
+#         "The stock market experienced significant changes after recent policy announcements affecting various sectors.",
+#         "The newly introduced tax bill has sparked debates in Congress and could have long-term impacts.",
+#         "Artificial Intelligence is evolving with applications in multiple industries including healthcare and finance.",
+#         "A new health study indicates that certain lifestyle changes could lead to improved well-being and longevity."
+#     ],
+#     "Date": ["2024-11-01", "2024-11-02", "2024-11-03", "2024-11-04"],
+#     "Link": [
+#         "https://news.example.com/economy1",
+#         "https://news.example.com/politics1",
+#         "https://news.example.com/tech1",
+#         "https://news.example.com/health1"
+#     ]
+# }
 
-# Convert the dictionary to a DataFrame
-df = pd.DataFrame(data)
+# # Convert the dictionary to a DataFrame
+# df = pd.DataFrame(data)
 
-# Create an instance of NewsData
-news_data = NewsData(df)
+# # Create an instance of NewsData
+# news_data = NewsData(df)
 
-# Calculate TF-BM25
-tf_bm25_results = news_data.tf_bm25()
-print("TF-BM25 Results:")
-for article_idx, tf_bm25_scores in tf_bm25_results.items():
-    print(f"Article {article_idx} TF-BM25 scores:")
-    for word, score in tf_bm25_scores.items():
-        print(f"  {word}: {score}")
-    print("\n")
+# # Generate document vectors using TF-BM25
+# bm25_vectors = news_data.tfidf_vectors(method="bm25")
+# print("TF-BM25 Similarity Matrix:")
+# bm25_similarity = news_data.calculate_similarity(bm25_vectors, method="dot_product")
+# print(bm25_similarity)
 
-# Calculate TF-ATF
-tf_atf_results = news_data.tf_atf()
-print("TF-ATF Results:")
-for article_idx, tf_atf_scores in tf_atf_results.items():
-    print(f"Article {article_idx} TF-ATF scores:")
-    for word, score in tf_atf_scores.items():
-        print(f"  {word}: {score}")
-    print("\n")
+# # Generate document vectors using TF-ATF
+# atf_vectors = news_data.tfidf_vectors(method="atf")
+# print("\nTF-ATF Cosine Similarity Matrix:")
+# atf_similarity = news_data.calculate_similarity(atf_vectors, method="cosine")
+# print(atf_similarity)
