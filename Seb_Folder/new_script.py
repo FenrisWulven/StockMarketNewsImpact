@@ -6,14 +6,15 @@ class NewsData:
     def __init__(self, df: pd.DataFrame):
         """Handles news article dataframes."""
         self.df = df
+        self.avg_doc_length = sum(len(row.split()) for row in self.df["Article Body"]) / len(self.df)
 
     def compute_tf(self, text):
         """Calculates term frequency for each word in a document."""
         words = text.split()
         word_count = len(words)
-        tf = Counter(words)  # Count the occurrences of each word
+        tf = Counter(words)
         for word in tf:
-            tf[word] /= word_count  # Normalize by the total number of words
+            tf[word] /= word_count
         return tf
 
     def compute_idf(self):
@@ -23,7 +24,7 @@ class NewsData:
         
         # Count how many documents contain each word
         for _, row in self.df.iterrows():
-            words = set(row["Article Body"].split())  # Use a set to count each word once per document
+            words = set(row["Article Body"].split())
             for word in words:
                 idf[word] = idf.get(word, 0) + 1
         
@@ -33,17 +34,52 @@ class NewsData:
         
         return idf
 
-    def tfidf(self):
-        """Calculates the TF-IDF score for each word in each document."""
-        idf = self.compute_idf()  # Get IDF values for the entire corpus
-        tfidf_dict = {}
+    def compute_tf_bm25(self, text, k1=1.5, b=0.75):
+        """Calculates BM25-based term frequency for each word in a document."""
+        words = text.split()
+        word_count = len(words)
+        doc_length = len(words)
+        tf = Counter(words)
+        
+        for word in tf:
+            tf[word] = (tf[word] * (k1 + 1)) / (tf[word] + k1 * (1 - b + b * (doc_length / self.avg_doc_length)))
+        
+        return tf
+
+    def compute_tf_atf(self, text):
+        """Calculates augmented term frequency for each word in a document."""
+        words = text.split()
+        max_tf = max(Counter(words).values())
+        tf = Counter(words)
+        
+        for word in tf:
+            tf[word] = 0.5 + 0.5 * (tf[word] / max_tf)
+        
+        return tf
+
+    def tf_bm25(self):
+        """Calculates the TF-BM25 score for each word in each document."""
+        idf = self.compute_idf()
+        tf_bm25_dict = {}
 
         for i, row in self.df.iterrows():
-            tf = self.compute_tf(row["Article Body"])  # Get TF values for the document
-            tfidf = {word: tf[word] * idf.get(word, 0) for word in tf}  # Calculate TF-IDF for each word
-            tfidf_dict[i] = tfidf  # Store TF-IDF scores for the document
+            tf_bm25 = self.compute_tf_bm25(row["Article Body"])
+            tf_bm25_scores = {word: tf_bm25[word] * idf.get(word, 0) for word in tf_bm25}
+            tf_bm25_dict[i] = tf_bm25_scores
 
-        return tfidf_dict
+        return tf_bm25_dict
+
+    def tf_atf(self):
+        """Calculates the TF-ATF score for each word in each document."""
+        idf = self.compute_idf()
+        tf_atf_dict = {}
+
+        for i, row in self.df.iterrows():
+            tf_atf = self.compute_tf_atf(row["Article Body"])
+            tf_atf_scores = {word: tf_atf[word] * idf.get(word, 0) for word in tf_atf}
+            tf_atf_dict[i] = tf_atf_scores
+
+        return tf_atf_dict
 
 # Sample data
 data = {
@@ -75,12 +111,20 @@ df = pd.DataFrame(data)
 # Create an instance of NewsData
 news_data = NewsData(df)
 
-# Calculate TF-IDF manually
-tfidf_results = news_data.tfidf()
+# Calculate TF-BM25
+tf_bm25_results = news_data.tf_bm25()
+print("TF-BM25 Results:")
+for article_idx, tf_bm25_scores in tf_bm25_results.items():
+    print(f"Article {article_idx} TF-BM25 scores:")
+    for word, score in tf_bm25_scores.items():
+        print(f"  {word}: {score}")
+    print("\n")
 
-# Print out the TF-IDF results for each article
-for article_idx, tfidf_scores in tfidf_results.items():
-    print(f"Article {article_idx} TF-IDF scores:")
-    for word, score in tfidf_scores.items():
+# Calculate TF-ATF
+tf_atf_results = news_data.tf_atf()
+print("TF-ATF Results:")
+for article_idx, tf_atf_scores in tf_atf_results.items():
+    print(f"Article {article_idx} TF-ATF scores:")
+    for word, score in tf_atf_scores.items():
         print(f"  {word}: {score}")
     print("\n")
