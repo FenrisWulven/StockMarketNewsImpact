@@ -8,6 +8,7 @@ class NewsData:
         """Handles news article dataframes."""
         self.df = df
         self.avg_doc_length = sum(len(row.split()) for row in self.df["Article Body"]) / len(self.df)
+        self.idf = self.compute_idf()
 
     def compute_tf(self, text):
         """Calculates term frequency for each word in a document."""
@@ -106,43 +107,49 @@ class NewsData:
 
 
 # Sample data
-# data = {
-#     "Category": ["Economy", "Politics", "Tech", "Health"],
-#     "Short Description": [
-#         "Stock markets react to the new policy changes.",
-#         "The new tax bill has been introduced in Congress.",
-#         "Innovative AI technology is shaping the future.",
-#         "Recent health studies show promising results."
-#     ],
-#     "Article Body": [
-#         "The stock market experienced significant changes after recent policy announcements affecting various sectors.",
-#         "The newly introduced tax bill has sparked debates in Congress and could have long-term impacts.",
-#         "Artificial Intelligence is evolving with applications in multiple industries including healthcare and finance.",
-#         "A new health study indicates that certain lifestyle changes could lead to improved well-being and longevity."
-#     ],
-#     "Date": ["2024-11-01", "2024-11-02", "2024-11-03", "2024-11-04"],
-#     "Link": [
-#         "https://news.example.com/economy1",
-#         "https://news.example.com/politics1",
-#         "https://news.example.com/tech1",
-#         "https://news.example.com/health1"
-#     ]
-# }
+data = {
+    "Category": ["Economy", "Politics", "Tech", "Health"],
+    "Short Description": [
+        "Stock markets react to the new policy changes.",
+        "The new tax bill has been introduced in Congress.",
+        "Innovative AI technology is shaping the future.",
+        "Recent health studies show promising results."
+    ],
+    "Article Body": [
+        "The stock market experienced significant changes after recent policy announcements affecting various sectors.",
+        "The newly introduced tax bill has sparked debates in Congress and could have long-term impacts.",
+        "Artificial Intelligence is evolving with applications in multiple industries including healthcare and finance.",
+        "A new health study indicates that certain lifestyle changes could lead to improved well-being and longevity."
+    ],
+    "Date": ["2024-11-01", "2024-11-02", "2024-11-03", "2024-11-04"],
+    "Link": [
+        "https://news.example.com/economy1",
+        "https://news.example.com/politics1",
+        "https://news.example.com/tech1",
+        "https://news.example.com/health1"
+    ]
+}
 
-# # Convert the dictionary to a DataFrame
-# df = pd.DataFrame(data)
+# Convert the dictionary to a DataFrame
+df = pd.DataFrame(data)
 
-# # Create an instance of NewsData
-# news_data = NewsData(df)
+# Create an instance of NewsData
+news_data = NewsData(df)
 
-# # Generate document vectors using TF-BM25
-# bm25_vectors = news_data.tfidf_vectors(method="bm25")
-# print("TF-BM25 Similarity Matrix:")
-# bm25_similarity = news_data.calculate_similarity(bm25_vectors, method="dot_product")
-# print(bm25_similarity)
+# Generate document vectors using TFIDF
+bm25_vectors = news_data.tfidf_vectors(method="tfidf")
+print("TFIDF Similarity Matrix:")
+bm25_similarity = news_data.calculate_similarity(bm25_vectors, method="dot_product")
+print(bm25_similarity)
 
-# # Generate document vectors using TF-ATF
-# atf_vectors = news_data.tfidf_vectors(method="atf")
-# print("\nTF-ATF Cosine Similarity Matrix:")
-# atf_similarity = news_data.calculate_similarity(atf_vectors, method="cosine")
-# print(atf_similarity)
+# Generate document vectors using TF-BM25
+bm25_vectors = news_data.tfidf_vectors(method="bm25")
+print("TF-BM25 Similarity Matrix:")
+bm25_similarity = news_data.calculate_similarity(bm25_vectors, method="dot_product")
+print(bm25_similarity)
+
+# Generate document vectors using TF-ATF
+atf_vectors = news_data.tfidf_vectors(method="atf")
+print("\nTF-ATF Cosine Similarity Matrix:")
+atf_similarity = news_data.calculate_similarity(atf_vectors, method="cosine")
+print(atf_similarity)
