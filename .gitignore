@@ -6,12 +6,25 @@ config/*.ini
 
 MarketNews/data/raw/
 
-# Data files
-data/raw/**/*.json
-data/raw/**/*.csv
-data/processed/**/*.csv
-data/output/**/*.png
-data/output/**/*.jpg
+# Specific data files we want to ignore
+MarketNews/data/processed/combined_news_data.csv
+MarketNews/data/processed/news_sentiment_data.csv
+MarketNews/data/processed/concat_data.csv
+MarketNews/data/processed/finnhub_scraped_articles.csv
+MarketNews/data/raw/marketaux/*.json
+Reddit_2021_to_2024.csv
+Stock_prices_2018_to_2022.csv
+Stock_prices_2021_to_2024.csv
+
+# Data files but NOT Python files
+*.csv
+*.json
+!MarketNews/src/**/*.py  # This ensures Python files are NOT ignored
+
+# Keep the directory structure but ignore data content
+MarketNews/data/**/
+!MarketNews/data/**/.*
+!MarketNews/data/**/__init__.py
 
 # Python cache files
 __pycache__/
