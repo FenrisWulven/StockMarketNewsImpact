@@ -1,1 +1,20 @@
-config.ini
+# Config files
+config/*.ini
+
+# any .ini files
+*.ini
+
+
+# Data files
+data/raw/**/*.json
+data/raw/**/*.csv
+data/processed/**/*.csv
+data/output/**/*.png
+data/output/**/*.jpg
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
