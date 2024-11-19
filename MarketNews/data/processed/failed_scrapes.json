@@ -1,0 +1,175 @@
+{
+    "failed_urls": [
+        "https://finance.yahoo.com/m/6c5668d6-05c3-37a6-8af6-c6146e6b299b/stocks-to-buy-and-watch%3A-top.html",
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-%28amzn%29-stock-quotes%2C.html",
+        "https://finance.yahoo.com/m/7ef68392-0e3a-3d5d-b06b-18b7ccc71dbd/stock-market-today%3A-stock.html",
+        "https://finance.yahoo.com/m/7ef68392-0e3a-3d5d-b06b-18b7ccc71dbd/stock-market-today%3A-stock.html",
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-stock-%28amzn%29-quotes%2C.html",
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-stock-%28amzn%29-quotes%2C.html",
+        "https://finance.yahoo.com/news/expert-claims-resolution-uaw-strike-180115102.html",
+        "https://seekingalpha.com/article/4660599-zen-ten-top-picks-2024",
+        "https://finance.yahoo.com/news/possible-bearish-signals-meta-platforms-120022337.html",
+        "https://finance.yahoo.com/m/3b70c14a-78f9-3f49-858d-ce61eeaffe79/big-tech-braces-for-wave-of.html",
+        "https://finance.yahoo.com/news/looking-top-momentum-pick-why-170005671.html",
+        "https://finance.yahoo.com/m/6c5668d6-05c3-37a6-8af6-c6146e6b299b/stocks-to-buy-and-watch%3A-top.html",
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-%28amzn%29-stock-quotes%2C.html",
+        "https://finance.yahoo.com/m/7ef68392-0e3a-3d5d-b06b-18b7ccc71dbd/stock-market-today%3A-stock.html",
+        "https://finance.yahoo.com/m/7ef68392-0e3a-3d5d-b06b-18b7ccc71dbd/stock-market-today%3A-stock.html",
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-stock-%28amzn%29-quotes%2C.html",
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-stock-%28amzn%29-quotes%2C.html",
+        "https://finance.yahoo.com/news/expert-claims-resolution-uaw-strike-180115102.html",
+        "https://seekingalpha.com/article/4660599-zen-ten-top-picks-2024",
+        "https://finance.yahoo.com/news/possible-bearish-signals-meta-platforms-120022337.html",
+        "https://finance.yahoo.com/m/3b70c14a-78f9-3f49-858d-ce61eeaffe79/big-tech-braces-for-wave-of.html",
+        "https://finance.yahoo.com/news/looking-top-momentum-pick-why-170005671.html",
+        "https://finance.yahoo.com/news/alphabet-inc-nasdaq-googl-potentially-110021237.html",
+        "https://www.marketwatch.com/articles/magnificent-7-tech-stocks-risk-cea44f9a",
+        "https://finance.yahoo.com/news/zacks-analyst-blog-highlights-riot-132500212.html",
+        "https://finance.yahoo.com/m/e0e0967b-5734-3ad5-8d2a-f1ab8e36f70e/one-fund-manager-called-meta.html",
+        "https://finance.yahoo.com/news/alphabet-googl-boosts-chrome-app-143000788.html",
+        "https://finance.yahoo.com/news/alphabet-googl-boosts-sports-streaming-145900675.html",
+        "https://www.marketwatch.com/data-news/meta-platforms-inc-stock-outperforms-competitors-despite-losses-on-the-day-2faca6bf-abe8ea21909e",
+        "https://finance.yahoo.com/news/metas-quest-2-vr-headset-164057222.html",
+        "https://finance.yahoo.com/news/why-alphabet-googl-poised-beat-171009099.html",
+        "https://finance.yahoo.com/news/why-alphabet-inc-goog-poised-171010235.html",
+        "https://finance.yahoo.com/m/47339a37-cbfb-34b5-8111-a9a982effd47/magnificent-seven-stocks-in.html",
+        "https://finance.yahoo.com/video/magnificent-seven-continue-dominating-markets-210500660.html",
+        "https://finance.yahoo.com/video/magnificent-seven-continue-dominating-markets-210500660.html",
+        "https://finance.yahoo.com/news/alphabet-googl-registers-bigger-fall-224519020.html"
+    ],
+    "failure_reasons": {
+        "https://finance.yahoo.com/m/6c5668d6-05c3-37a6-8af6-c6146e6b299b/stocks-to-buy-and-watch%3A-top.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=dba1c2870a22e073a2597784a2decbd08071f5554bb6ebf10dd54e02a8544a61",
+            "timestamp": "2024-11-19 17:13:57"
+        },
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-%28amzn%29-stock-quotes%2C.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=fd929921a47c27689d3cc21a509e5332e7e3e2d2e785b2527a688ba3cc7e0d66",
+            "timestamp": "2024-11-19 17:14:00"
+        },
+        "https://finance.yahoo.com/m/7ef68392-0e3a-3d5d-b06b-18b7ccc71dbd/stock-market-today%3A-stock.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=882e95a8c18d2ea609214ac42a5914baedc824d2f8f3180b00719d86811fc59c",
+            "timestamp": "2024-11-19 17:14:06"
+        },
+        "https://finance.yahoo.com/m/7e9192cf-edec-35a8-8249-120b90df0dac/amazon-stock-%28amzn%29-quotes%2C.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=a1d071cc932e00e79d492bbb79b0f20c4eea68a4c00f80b96bcc3ef186929045",
+            "timestamp": "2024-11-19 17:14:12"
+        },
+        "https://finance.yahoo.com/news/expert-claims-resolution-uaw-strike-180115102.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=e751e81fe71310398dbd771412cb7948597f001dac60f7a18ae5b99e823d5eec",
+            "timestamp": "2024-11-19 17:14:14"
+        },
+        "https://seekingalpha.com/article/4660599-zen-ten-top-picks-2024": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=71ed0191f3a7a76f20579b3e12926b11d4456966e639bb541e107d7fca8737d8",
+            "timestamp": "2024-11-19 17:14:25"
+        },
+        "https://finance.yahoo.com/news/possible-bearish-signals-meta-platforms-120022337.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=139e8a66c5f925c898e48a091982b433f2bd9db8b8d19d6636ce8ebb7eaf6276",
+            "timestamp": "2024-11-19 17:14:50"
+        },
+        "https://finance.yahoo.com/m/3b70c14a-78f9-3f49-858d-ce61eeaffe79/big-tech-braces-for-wave-of.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=4051f9c01393a37696edb8aa27fc4aeebbe0d26911eec7af84e389cde4bddc74",
+            "timestamp": "2024-11-19 17:14:57"
+        },
+        "https://finance.yahoo.com/news/looking-top-momentum-pick-why-170005671.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=c454b029d3868864706ac370e405ee355e2ca0571246e744397b5db923c03bd4",
+            "timestamp": "2024-11-19 17:14:59"
+        },
+        "https://finance.yahoo.com/news/alphabet-inc-nasdaq-googl-potentially-110021237.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=7d181736a609d6b501a5d169ab280fa5c4fe80c54028560219215f3600b445de",
+            "timestamp": "2024-11-19 17:17:05"
+        },
+        "https://www.marketwatch.com/articles/magnificent-7-tech-stocks-risk-cea44f9a": {
+            "error_type": "scraping_error",
+            "error_message": "Error: 401 Client Error: HTTP Forbidden for url: https://www.marketwatch.com/articles/magnificent-7-tech-stocks-risk-cea44f9a",
+            "original_url": "https://finnhub.io/api/news?id=486f47dd22e21a4f4e7aa4b352d8596b4ea9a8a3247cc4e35755af93f6533c6d",
+            "timestamp": "2024-11-19 17:17:44"
+        },
+        "https://finance.yahoo.com/news/zacks-analyst-blog-highlights-riot-132500212.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=55f86d8b9890840b9f79f9b3518633badb3f42b558f5d3e1d4fc7b47b94304a9",
+            "timestamp": "2024-11-19 17:17:47"
+        },
+        "https://finance.yahoo.com/m/e0e0967b-5734-3ad5-8d2a-f1ab8e36f70e/one-fund-manager-called-meta.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=d0ed65ea48c21c0fdf57f448df1f7255daca508e43dc0d68d3d76b3769201910",
+            "timestamp": "2024-11-19 17:17:52"
+        },
+        "https://finance.yahoo.com/news/alphabet-googl-boosts-chrome-app-143000788.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=640126ae9a083d57be515f62daff791398c5e419565f146f11457d1455c90ab6",
+            "timestamp": "2024-11-19 17:17:54"
+        },
+        "https://finance.yahoo.com/news/alphabet-googl-boosts-sports-streaming-145900675.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=03937f996e3ad3245ac2e124ef6b6de6bb327041d91d67ed5b9ac4250191f4ce",
+            "timestamp": "2024-11-19 17:17:57"
+        },
+        "https://www.marketwatch.com/data-news/meta-platforms-inc-stock-outperforms-competitors-despite-losses-on-the-day-2faca6bf-abe8ea21909e": {
+            "error_type": "scraping_error",
+            "error_message": "Error: 401 Client Error: HTTP Forbidden for url: https://www.marketwatch.com/data-news/meta-platforms-inc-stock-outperforms-competitors-despite-losses-on-the-day-2faca6bf-abe8ea21909e",
+            "original_url": "https://finnhub.io/api/news?id=ebda38b8bdcc4218876ea07de809376ea78a56d9fc98b3a272f580d07c70c815",
+            "timestamp": "2024-11-19 17:18:02"
+        },
+        "https://finance.yahoo.com/news/metas-quest-2-vr-headset-164057222.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=4d836718299d4b5c6c887ccdc7dc84aa9ec4d485a7c8875988d7aa0022509275",
+            "timestamp": "2024-11-19 17:18:09"
+        },
+        "https://finance.yahoo.com/news/why-alphabet-googl-poised-beat-171009099.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=8819209fd06151aebe13143eade65d89641b27768421b9d7042679dcc1e0d70e",
+            "timestamp": "2024-11-19 17:18:13"
+        },
+        "https://finance.yahoo.com/news/why-alphabet-inc-goog-poised-171010235.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=99043bb834e360ba20400ae742bea7c4c86c58f3376d06dfd9723f616059a850",
+            "timestamp": "2024-11-19 17:18:15"
+        },
+        "https://finance.yahoo.com/m/47339a37-cbfb-34b5-8111-a9a982effd47/magnificent-seven-stocks-in.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=2a483ce577220d03d4a31b96ef234738316d4034a5ff25a52595881fa1099b16",
+            "timestamp": "2024-11-19 17:18:22"
+        },
+        "https://finance.yahoo.com/video/magnificent-seven-continue-dominating-markets-210500660.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=582431f2ff351aad293e56e536aa1eb59a5adc3cdc1fd2637569b43bb16ee24a",
+            "timestamp": "2024-11-19 17:18:28"
+        },
+        "https://finance.yahoo.com/news/alphabet-googl-registers-bigger-fall-224519020.html": {
+            "error_type": "scraping_error",
+            "error_message": "Content extraction failed or only found cookie/privacy content",
+            "original_url": "https://finnhub.io/api/news?id=4ccd12ad726d838606f8838a8e86266eadd534f4e5ab7bada538a49f9efa1d07",
+            "timestamp": "2024-11-19 17:18:30"
+        }
+    },
+    "last_updated": "2024-11-19 17:18:30"
+}

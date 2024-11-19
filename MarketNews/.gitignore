@@ -1,0 +1,14 @@
+# Ignore fetched data files
+data/FetchedNews/*.json
+data/FetchedNews/*.csv
+data/output/*.png
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Config files with sensitive information
+config/*.ini 
