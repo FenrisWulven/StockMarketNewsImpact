@@ -4,6 +4,7 @@ config/*.ini
 # any .ini files
 *.ini
 
+MarketNews/data/raw/marketaux/filtered_market_news_2022.json
 
 # Data files
 data/raw/**/*.json
