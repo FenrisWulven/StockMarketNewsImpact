@@ -135,6 +135,29 @@ def louvain_community_detection(graph, use_package=True):
                     change = True
     return partition
 
+def calculate_modularity(graph, partitions):
+    m = graph.size(weight="weight")  # Total weight of edges
+    degrees = dict(graph.degree(weight="weight"))  # Degree of each node
+    modularity_score = 0
+
+    node_to_community = {node: idx for idx, partition in enumerate(partitions) for node in partition}
+
+    # Compute modularity
+    for u in graph.nodes():
+        for v in graph.nodes():
+            if u == v or not graph.has_edge(u, v):
+                A_uv = 0  # No edge between u and v
+            else:
+                A_uv = graph[u][v].get("weight", 1)  # Edge weight
+            k_u = degrees[u]
+            k_v = degrees[v]
+            expected_weight = (k_u * k_v) / (2 * m)
+            if node_to_community[u] == node_to_community[v]:  # Same community
+                modularity_score += (A_uv - expected_weight)
+
+    modularity_score /= (2 * m)
+    return modularity_score
+
 # Create a graph from the similarity matrix
 G = nx.Graph()
 num_nodes = similarity_matrix.shape[0]
