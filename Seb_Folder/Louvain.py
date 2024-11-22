@@ -13,15 +13,21 @@ class NewsData:
     def __init__(self, df: pd.DataFrame):
         """Handles news article dataframes."""
         self.df = df
-        self.df["Cleaned Article"] = self.df["Article Body"].apply(self.clean_text)  # Clean text column
+        self.df["Cleaned Article"] = self.df["Body"].apply(self.clean_text)  # Clean text column
+        self.df["Date"] = self.df["Date"].apply(self.convert_date)  # Convert date column to datetime
         self.vocabulary = self.build_vocabulary()
         self.idf = self.compute_idf()
 
     def clean_text(self, text):
         """Standardizes and cleans text by lowercasing, removing punctuation, and extra whitespace."""
         text = text.lower()  # Lowercasing
+        text = re.sub(r'(?:https?://|www\.)[^\s]+', '', text)  # Remove URLs
         text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)  # Remove punctuation
+        text = re.sub(r"[^a-zA-Z0-9\s]", "", text) # Remove special characters such as /, \, |, # etc.
         text = re.sub(r"\s+", " ", text).strip()  # Remove extra whitespace
+        # If preview is present in a word without spaces around it, remove that word from the text
+
+
         return text
 
     def build_vocabulary(self):
@@ -60,6 +66,16 @@ class NewsData:
         
         # Calculate cosine similarity
         return cosine_similarity(vectors)
+    
+    def convert_date(self, date_str):
+        """Converts a date string to a datetime object."""
+        # Check the format of the date string and convert to datetime D/M/Y
+        if "-" in date_str:
+            return pd.to_datetime(date_str)
+        elif "/" in date_str:
+            return pd.to_datetime(date_str, format="%d/%m/%Y")
+        else:
+            raise ValueError("Unknown date format. Please provide a valid date string.")
 
 # Example Usage
 data = {
@@ -70,7 +86,7 @@ data = {
         "Innovative AI technology is shaping the future.",
         "Recent health studies show promising results."
     ],
-    "Article Body": [
+    "Body": [
         "The stock market experienced significant changes after recent policy announcements affecting various sectors.",
         "The newly introduced tax bill has sparked debates in Congress and could have long-term impacts.",
         "Artificial Intelligence is evolving with applications in multiple industries including healthcare and finance.",
