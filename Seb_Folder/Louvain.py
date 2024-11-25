@@ -8,13 +8,16 @@ import re
 import string
 import networkx as nx
 import community as community_louvain  # Install python-louvain package
+from datasketch import MinHash, MinHashLSH
+# Import stopwords from NLTK
+from nltk.corpus import stopwords
 
 class NewsData:
     def __init__(self, df: pd.DataFrame):
         """Handles news article dataframes."""
         self.df = df
-        self.df["Cleaned Article"] = self.df["Body"].apply(self.clean_text)  # Clean text column
-        self.df["Date"] = self.df["Date"].apply(self.convert_date)  # Convert date column to datetime
+        self.df["cleaned"] = self.df["body"].apply(self.clean_text)  # Clean text column
+        self.df["timestamp"] = self.df["timestamp"].apply(self.convert_date)  # Convert date column to datetime
         self.vocabulary = self.build_vocabulary()
         self.idf = self.compute_idf()
 
@@ -25,15 +28,63 @@ class NewsData:
         text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)  # Remove punctuation
         text = re.sub(r"[^a-zA-Z0-9\s]", "", text) # Remove special characters such as /, \, |, # etc.
         text = re.sub(r"\s+", " ", text).strip()  # Remove extra whitespace
-        # If preview is present in a word without spaces around it, remove that word from the text
-
+        # Remove stopwords
+        #stop_words = set(stopwords.words('english'))
+        #text = " ".join([word for word in text.split() if word not in stop_words])
 
         return text
+    
+    def generate_minhash(self, doc, num_perm=256):
+        """Generates a MinHash signature for a document."""
+        minhash = MinHash(num_perm=num_perm)
+        for word in set(doc.split()):  # Use set to avoid duplicate contributions
+            minhash.update(word.encode('utf8'))
+        return minhash
+    
+    def build_lsh(self, threshold=0.2, num_perm=128):
+        """Builds an LSH index for approximate similarity detection."""
+        self.lsh = MinHashLSH(threshold=threshold, num_perm=num_perm)
+        self.minhashes = {}  # Store MinHash objects for later use
+
+        for idx, doc in enumerate(self.df["cleaned"]):
+            minhash = self.generate_minhash(doc, num_perm=num_perm)
+            self.lsh.insert(idx, minhash)  # Insert into LSH
+            self.minhashes[idx] = minhash  # Cache for querying
+    
+    def find_duplicates(self):
+        """Finds clusters of near-duplicate documents."""
+        duplicate_groups = []
+        visited = set()
+
+        for idx in self.minhashes:
+            if idx in visited:
+                continue
+            group = self.lsh.query(self.minhashes[idx])  # Find similar documents
+            duplicate_groups.append(group)
+            visited.update(group)
+
+        return duplicate_groups
+    
+    def merge_duplicates(self, duplicate_groups):
+        """Merges near-duplicate documents into single nodes."""
+        # Create a mapping from original document indices to merged node indices
+        merged_mapping = {}
+        merged_texts = []
+        
+        for node_idx, group in enumerate(duplicate_groups):
+            merged_mapping.update({doc_idx: node_idx for doc_idx in group})
+            # Combine the text of the group into one document (e.g., concatenate or choose one)
+            merged_text = " ".join(self.df["cleaned"].iloc[group])
+            merged_texts.append(merged_text)
+
+        # Update the DataFrame with merged nodes
+        self.df = pd.DataFrame({"cleaned": merged_texts})
+        self.merged_mapping = merged_mapping
 
     def build_vocabulary(self):
         """Creates a consistent vocabulary across documents."""
         vocabulary = set()
-        for article in self.df["Cleaned Article"]:
+        for article in self.df["cleaned"]:
             vocabulary.update(article.split())
         return vocabulary
 
@@ -49,7 +100,7 @@ class NewsData:
         num_docs = len(self.df)
         doc_count = Counter()
         
-        for article in self.df["Cleaned Article"]:
+        for article in self.df["cleaned"]:
             doc_count.update(set(article.split()))
         
         return {word: math.log((num_docs + 1) / (count + 1)) + 1 for word, count in doc_count.items()}
@@ -62,22 +113,44 @@ class NewsData:
     def compute_similarity_matrix(self, method="tfidf"):
         """Calculates pairwise cosine similarity for all document vectors."""
         # Ensure all vectors are created with the same vocabulary length
-        vectors = [self.generate_vector(self.compute_tf(doc)).toarray()[0] for doc in self.df["Cleaned Article"]]
+        vectors = [self.generate_vector(self.compute_tf(doc)).toarray()[0] for doc in self.df["cleaned"]]
         
         # Calculate cosine similarity
         return cosine_similarity(vectors)
     
+    def compute_similarity_lsh(self):
+        """Uses LSH to find similar document pairs."""
+        for idx in self.minhashes:
+            similar_docs = self.lsh.query(self.minhashes[idx])
+            for sim_idx in similar_docs:
+                if idx < sim_idx:  # Avoid duplicate pairs
+                    yield idx, sim_idx
+    
+    def compute_similarity_incremental(self):
+        """
+        Calculates pairwise cosine similarity incrementally, yielding one pair at a time to save memory.
+        """
+        num_docs = len(self.df)
+
+        for i in range(num_docs):
+            tf_i = self.compute_tf(self.df["cleaned"].iloc[i])
+            vec_i = self.generate_vector(tf_i)
+
+            for j in range(i + 1, num_docs):
+                tf_j = self.compute_tf(self.df["cleaned"].iloc[j])
+                vec_j = self.generate_vector(tf_j)
+
+                # Compute cosine similarity for the pair
+                similarity = cosine_similarity(vec_i, vec_j)[0, 0]
+                yield i, j, similarity
+    
     def convert_date(self, date_str):
         """Converts a date string to a datetime object."""
-        # Check the format of the date string and convert to datetime D/M/Y
-        if "-" in date_str:
-            return pd.to_datetime(date_str)
-        elif "/" in date_str:
-            return pd.to_datetime(date_str, format="%d/%m/%Y")
-        else:
-            raise ValueError("Unknown date format. Please provide a valid date string.")
+
+        return pd.to_datetime(date_str)
 
 # Example Usage
+"""
 data = {
     "Category": ["Economy", "Politics", "Tech", "Health"],
     "Short Description": [
@@ -111,7 +184,7 @@ similarity_matrix = news_data.compute_similarity_matrix()
 # Print similarity matrix
 print("TF-IDF Cosine Similarity Matrix:")
 print(similarity_matrix)
-
+"""
 # Louvain Community Detection
 def louvain_community_detection(graph, use_package=True):
     """Applies the Louvain algorithm for community detection on an existing graph.
@@ -174,6 +247,7 @@ def calculate_modularity(graph, partitions):
     modularity_score /= (2 * m)
     return modularity_score
 
+"""
 # Create a graph from the similarity matrix
 G = nx.Graph()
 num_nodes = similarity_matrix.shape[0]
@@ -193,3 +267,4 @@ print(partition)
 df['Community'] = df.index.map(partition)
 print("\nData with Community Assignments:")
 print(df[['Category', 'Community']])
+"""
