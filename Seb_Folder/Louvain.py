@@ -11,27 +11,35 @@ import community as community_louvain  # Install python-louvain package
 from datasketch import MinHash, MinHashLSH
 # Import stopwords from NLTK
 from nltk.corpus import stopwords
+from tqdm import tqdm
 
 class NewsData:
     def __init__(self, df: pd.DataFrame):
         """Handles news article dataframes."""
-        self.df = df
+        self.df = df  # Drop rows with missing body text
         self.df["cleaned"] = self.df["body"].apply(self.clean_text)  # Clean text column
         self.df["timestamp"] = self.df["timestamp"].apply(self.convert_date)  # Convert date column to datetime
-        self.vocabulary = self.build_vocabulary()
-        self.idf = self.compute_idf()
+        #self.vocabulary = self.build_vocabulary()
+        #self.idf = self.compute_idf()
 
     def clean_text(self, text):
         """Standardizes and cleans text by lowercasing, removing punctuation, and extra whitespace."""
-        text = text.lower()  # Lowercasing
-        text = re.sub(r'(?:https?://|www\.)[^\s]+', '', text)  # Remove URLs
-        text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)  # Remove punctuation
-        text = re.sub(r"[^a-zA-Z0-9\s]", "", text) # Remove special characters such as /, \, |, # etc.
-        text = re.sub(r"\s+", " ", text).strip()  # Remove extra whitespace
-        # Remove stopwords
-        #stop_words = set(stopwords.words('english'))
-        #text = " ".join([word for word in text.split() if word not in stop_words])
+        try:
+             text = text.lower()  # Lowercasing
+             text = re.sub(r'(?:https?://|www\.)[^\s]+', '', text)  # Remove URLs
+             text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)  # Remove punctuation
+             text = re.sub(r"[^a-zA-Z0-9\s]", "", text) # Remove special characters such as /, \, |, # etc.
+             text = re.sub(r"\s+", " ", text).strip()  # Remove extra whitespace
+        except:
+            print(text)
+            # print row number
+            print(self.df[self.df['body'] == text].index)
+            # print row
+            print(self.df[self.df['body'] == text])
 
+        # Remove stopwords and words "one", "time", "reddit"
+        stop_words = set(stopwords.words('english')).union({"one", "reddit", "time"})
+        text = " ".join([word for word in text.split() if word not in stop_words])
         return text
     
     def generate_minhash(self, doc, num_perm=256):
@@ -46,7 +54,8 @@ class NewsData:
         self.lsh = MinHashLSH(threshold=threshold, num_perm=num_perm)
         self.minhashes = {}  # Store MinHash objects for later use
 
-        for idx, doc in enumerate(self.df["cleaned"]):
+        # TQDM this
+        for idx, doc in enumerate(tqdm(self.df["cleaned"], desc="Building LSH index")):
             minhash = self.generate_minhash(doc, num_perm=num_perm)
             self.lsh.insert(idx, minhash)  # Insert into LSH
             self.minhashes[idx] = minhash  # Cache for querying
@@ -73,8 +82,8 @@ class NewsData:
         
         for node_idx, group in enumerate(duplicate_groups):
             merged_mapping.update({doc_idx: node_idx for doc_idx in group})
-            # Combine the text of the group into one document (e.g., concatenate or choose one)
-            merged_text = " ".join(self.df["cleaned"].iloc[group])
+            # Combine the text of the group into one document: chose one
+            merged_text = self.df["cleaned"].iloc[group[0]]
             merged_texts.append(merged_text)
 
         # Update the DataFrame with merged nodes
