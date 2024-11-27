@@ -15,6 +15,8 @@ MarketNews/data/raw/marketaux/*.json
 Reddit_2021_to_2024.csv
 Stock_prices_2018_to_2022.csv
 Stock_prices_2021_to_2024.csv
+combined_news_with_bodies_with_sentiment.csv
+combined_news_with_bodies.csv
 
 # Data files but NOT Python files
 *.csv
@@ -33,3 +35,6 @@ __pycache__/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 Reddit/.env
+
+
+Reddit_2021_to_2024.csv
