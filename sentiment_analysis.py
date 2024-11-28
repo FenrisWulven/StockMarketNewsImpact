@@ -28,8 +28,8 @@ class NewsDataset(Dataset):
             return_tensors='pt'
         )
 
-def load_finbert():
-    """Load FinBERT model and tokenizer"""
+def load_tf():
+    """Load TF model and tokenizer"""
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
     
@@ -127,9 +127,9 @@ def analyze_sentiments(csv_path, sample_size=None, batch_size=1024):
         print(f"Taking sample of {sample_size} entries...")
         df = df.head(sample_size)
     
-    # Load FinBERT
-    print("Loading FinBERT model...")
-    tokenizer, model, device = load_finbert()
+    # Load TF model
+    print("Loading TF model...")
+    tokenizer, model, device = load_tf()
     model.eval()  # Set model to evaluation mode
     
     # Process in batches

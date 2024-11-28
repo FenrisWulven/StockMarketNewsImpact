@@ -147,9 +147,9 @@ def fetch_marketaux_news():
     # Parameters
     api_token = 'jvY5DqlTyacARjdScci70wqnLPynkDCkwEtJ5BTY'
     symbols = ['AAPL', 'TSLA', 'GOOGL', 'MSFT', 'META', 'AMZN', 'NVDA']
-    year = '2021'
+    year = '2023'
     start_date = f'{year}-01-01'
-    end_date = f'{year}-12-31'  # Extended date range
+    end_date = f'{year}-06-30'  # Extended date range
     
     # Collect news articles
     news_articles = collect_news(api_token, symbols, start_date, end_date)
