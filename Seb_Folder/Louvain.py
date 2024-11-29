@@ -8,10 +8,13 @@ import re
 import string
 import networkx as nx
 import community as community_louvain  # Install python-louvain package
-from datasketch import MinHash, MinHashLSH
+from datasketch import MinHash, MinHashLSH, LeanMinHash
 # Import stopwords from NLTK
 from nltk.corpus import stopwords
 from tqdm import tqdm
+from random import seed
+np.random.seed(42)
+seed(42)
 
 class NewsData:
     def __init__(self, df: pd.DataFrame):
@@ -26,7 +29,7 @@ class NewsData:
         """Standardizes and cleans text by lowercasing, removing punctuation, and extra whitespace."""
         try:
              text = text.lower()  # Lowercasing
-             text = re.sub(r'(?:https?://|www\.)[^\s]+', '', text)  # Remove URLs
+             text = re.sub(r'(?:https?://|www\.)[^\s]+|(?:\b[a-zA-Z0-9.-]+\.(?:com|org|net|io)\b)', '', text)
              text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)  # Remove punctuation
              text = re.sub(r"[^a-zA-Z0-9\s]", "", text) # Remove special characters such as /, \, |, # etc.
              text = re.sub(r"\s+", " ", text).strip()  # Remove extra whitespace
@@ -38,7 +41,14 @@ class NewsData:
             print(self.df[self.df['body'] == text])
 
         # Remove stopwords and words "one", "time", "reddit"
-        stop_words = set(stopwords.words('english')).union({"one", "reddit", "time"})
+        stop_words = set(stopwords.words('english')).union({"one", "reddit", "time", "zacks", "rank", "motley", "fool", "cookies",
+                                                            "terms", "service", "privacy", "policy", "contact", "us", "advertising",
+                                                            "about", "careers", "help", "site", "map", "copyright", "trademark",
+                                                            "disclaimer", "accessibility", "preferences", "newsletter", "feedback",
+                                                            "use", "site", "constitutes", "acceptance", "user", "agreement", "please",
+                                                            "password", "forgot", "username", "email", "email", "password", "username",
+                                                            "dont", "know", "company", "return", "stock", "market", "investment",
+                                                            "herein", "represented"})
         text = " ".join([word for word in text.split() if word not in stop_words])
         return text
     
@@ -47,7 +57,12 @@ class NewsData:
         minhash = MinHash(num_perm=num_perm)
         for word in set(doc.split()):  # Use set to avoid duplicate contributions
             minhash.update(word.encode('utf8'))
-        return minhash
+        return LeanMinHash(minhash)
+    
+    def delete_lsh(self):
+        """Deletes the LSH index to free up memory."""
+        del self.lsh
+        del self.minhashes
     
     def build_lsh(self, threshold=0.2, num_perm=128):
         """Builds an LSH index for approximate similarity detection."""
