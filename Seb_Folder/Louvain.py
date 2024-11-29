@@ -48,7 +48,7 @@ class NewsData:
                                                             "use", "site", "constitutes", "acceptance", "user", "agreement", "please",
                                                             "password", "forgot", "username", "email", "email", "password", "username",
                                                             "dont", "know", "company", "return", "stock", "market", "investment",
-                                                            "herein", "represented"})
+                                                            "herein", "represented", "said"})
         text = " ".join([word for word in text.split() if word not in stop_words])
         return text
     
