@@ -49,6 +49,7 @@ def collect_news(api_key, symbols, start_date, end_date):
     """
     base_url = "https://api.marketaux.com/v1/news/all"
     all_news = []
+    collected_uuids = set()  # Track all collected UUIDs across days
     
     # Load existing UUIDs
     year = start_date[:4]
@@ -65,12 +66,12 @@ def collect_news(api_key, symbols, start_date, end_date):
         company_counts = {symbol: 0 for symbol in symbols}
         page = 1
         
-        while not all(count >= 2 for count in company_counts.values()):
+        while True:
             params = {
                 'api_token': api_key,
-                'symbols': ','.join(symbols),  # Search all companies at once
+                'symbols': ','.join(symbols),
                 'filter_entities': 'true',
-                'min_match_score': 90,
+                'min_match_score': 80,
                 'language': 'en',
                 'date': formatted_date,
                 'limit': 20,
@@ -80,7 +81,6 @@ def collect_news(api_key, symbols, start_date, end_date):
             try:
                 response = requests.get(base_url, params=params)
                 
-                # Handle rate limiting
                 if response.status_code == 429:
                     print(f"\nRate limit hit, waiting 60 seconds...")
                     time.sleep(60)
@@ -90,38 +90,43 @@ def collect_news(api_key, symbols, start_date, end_date):
                 data = response.json()
                 
                 if not data['data']:
-                    print(f"\nNo more articles available for {formatted_date}")
-                    break
+                    break  # No more articles for this day
                 
                 # Process articles
                 for article in data['data']:
-                    # Skip if article already exists
-                    if article.get('uuid') in existing_uuids:
-                        continue
-                        
-                    entities = article.get('entities', [])
-                    article_added = False
+                    article_uuid = article.get('uuid')
                     
-                    # Check which companies are mentioned
+                    # Skip if article UUID is in existing or already collected
+                    if (article_uuid in existing_uuids or 
+                        article_uuid in collected_uuids):
+                        continue
+                    
+                    entities = article.get('entities', [])
+                    relevant_article = False
+                    
+                    # Check which companies are mentioned with sufficient relevance
                     for entity in entities:
                         if (entity.get('type') == 'equity' and 
                             entity.get('symbol') in symbols and 
-                            company_counts[entity.get('symbol')] < 2):
+                            entity.get('match_score', 0) >= 90):
                             
                             company_counts[entity.get('symbol')] += 1
-                            if not article_added:
-                                daily_articles.append(article)
-                                article_added = True
+                            relevant_article = True
+                    
+                    if relevant_article:
+                        daily_articles.append(article)
+                        collected_uuids.add(article_uuid)  # Add to collected UUIDs
                 
-                print(f"\rDate: {formatted_date} - Page: {page} - Current counts:", end='')
+                print(f"\rDate: {formatted_date} - Page: {page} - Articles found: {len(daily_articles)} - Counts:", end='')
                 for symbol, count in company_counts.items():
                     print(f" {symbol}: {count}", end='')
                 
-                if len(data['data']) < 20:  # No more pages
+                # Break conditions
+                if len(data['data']) < 20 or page >= 10:  # Added page limit
                     break
                 
                 page += 1
-                time.sleep(0.001)  # Small delay between requests
+                time.sleep(0.01)  # Increased delay between requests
                 
             except Exception as e:
                 print(f"\nError collecting news for {formatted_date}: {str(e)}")
@@ -134,27 +139,54 @@ def collect_news(api_key, symbols, start_date, end_date):
         # Add daily articles to overall collection
         all_news.extend(daily_articles)
         
-        print(f"\nFinal article counts for {formatted_date}:")
+        print(f"\nCollected {len(daily_articles)} unique articles for {formatted_date}")
+        print("Final article counts:")
         for company, count in company_counts.items():
             print(f"{company}: {count}")
         print()
     
-    print(f"\nTotal new articles collected: {len(all_news)}")
+    print(f"\nTotal unique articles collected: {len(all_news)}")
     print(f"Skipped {len(existing_uuids)} existing articles")
-    return pd.DataFrame(all_news)
+    
+    return all_news
+
+def print_unique_article_stats(articles):
+    """Print statistics about unique articles per company"""
+    company_articles = {}
+    all_uuids = set()
+    
+    for article in articles:
+        article_uuid = article.get('uuid')
+        if article_uuid:
+            all_uuids.add(article_uuid)
+        
+        entities = article.get('entities', [])
+        
+        for entity in entities:
+            if entity.get('type') == 'equity':
+                symbol = entity.get('symbol')
+                if symbol not in company_articles:
+                    company_articles[symbol] = set()
+                if article_uuid:
+                    company_articles[symbol].add(article_uuid)
+    
+    print("\nUnique articles per company:")
+    for symbol, article_uuids in sorted(company_articles.items()):
+        print(f"{symbol}: {len(article_uuids)} unique articles")
+    print(f"Total unique articles across all companies: {len(all_uuids)}")
 
 def fetch_marketaux_news():
     # Parameters
     api_token = 'jvY5DqlTyacARjdScci70wqnLPynkDCkwEtJ5BTY'
     symbols = ['AAPL', 'TSLA', 'GOOGL', 'MSFT', 'META', 'AMZN', 'NVDA']
-    year = '2023'
-    start_date = f'{year}-01-01'
-    end_date = f'{year}-06-30'  # Extended date range
+    year = '2022'
+    start_date = f'{year}-02-06'
+    end_date = f'{year}-12-31'  # Extended date range
     
-    # Collect news articles
+    # Collect news articles (now returns a list)
     news_articles = collect_news(api_token, symbols, start_date, end_date)
 
-    if len(news_articles) == 0:
+    if not news_articles:  # Check if the list is empty
         print("No articles collected. Exiting.")
         return
 
@@ -162,25 +194,20 @@ def fetch_marketaux_news():
     raw_dir = os.path.join(BASE_PATH, 'marketaux')
     os.makedirs(raw_dir, exist_ok=True)
 
-    # Save new articles to _new file
-    new_file = os.path.join(raw_dir, f'filtered_market_news_{year}_new.json')
+    # Add this before saving to file
+    print_unique_article_stats(news_articles)
     
-    # Load existing new articles if any
-    existing_new_articles = []
-    if os.path.exists(new_file):
-        with open(new_file, 'r') as f:
-            existing_new_articles = json.load(f)
+    # Format the date range for the filename
+    date_range = f"{start_date.replace('-', '')}_{end_date.replace('-', '')}"
+    new_file = os.path.join(raw_dir, f'filtered_market_news_{year}_{date_range}.json')
     
-    # Combine existing new articles with newly collected ones
-    all_new_articles = existing_new_articles + news_articles.to_dict(orient='records')
-    
-    # Save to the _new file
+    # Save directly to the file
     with open(new_file, 'w') as f:
-        json.dump(all_new_articles, f, indent=4)
+        json.dump(news_articles, f, indent=4)
 
     # Process the data into a more structured format
     processed_articles = []
-    for article in news_articles.to_dict(orient='records'):
+    for article in news_articles:  # Use the list directly instead of converting to dict
         # Extract all symbols from entities
         entities = article.get('entities', [])
         if not entities:
@@ -219,7 +246,8 @@ def fetch_marketaux_news():
         print("No processed articles. Exiting.")
         return
         
-    processed_output_file = os.path.join(processed_dir, f'marketaux_news_{year}_new.csv')
+    # Update processed filename to use date range instead of timestamp
+    processed_output_file = os.path.join(processed_dir, f'marketaux_news_{year}_{date_range}.csv')
     df.to_csv(processed_output_file, index=False)
 
     print(f"\nTotal articles retrieved: {len(news_articles)}")
@@ -231,7 +259,7 @@ def fetch_marketaux_news():
         # Print summary per company
         company_counts = df['symbol'].value_counts()
         print("\nArticles per company:")
-        print(company_counts.to_string())
+        print(company_counts.to_string())   
     else:
         print("\nNo symbol column found in processed data")
 
