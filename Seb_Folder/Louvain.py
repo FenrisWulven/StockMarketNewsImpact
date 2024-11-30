@@ -93,17 +93,27 @@ class NewsData:
         """Merges near-duplicate documents into single nodes."""
         # Create a mapping from original document indices to merged node indices
         merged_mapping = {}
-        merged_texts = []
+        keep_indices = set()
+        remove_indices = set()
         
         for node_idx, group in enumerate(duplicate_groups):
+            # Map each document index in the group to the representative node index
             merged_mapping.update({doc_idx: node_idx for doc_idx in group})
-            # Combine the text of the group into one document: chose one
-            merged_text = self.df["cleaned"].iloc[group[0]]
-            merged_texts.append(merged_text)
+            
+            # Keep the first document in the group and mark the rest for removal
+            keep_indices.add(group[0])
+            remove_indices.update(group[1:])
 
-        # Update the DataFrame with merged nodes
-        self.df = pd.DataFrame({"cleaned": merged_texts})
-        self.merged_mapping = merged_mapping
+        # Remove duplicates from the DataFrame, keeping only representative rows
+        self.df = self.df.drop(index=list(remove_indices)).reset_index(drop=True)
+        
+        # Update merged_mapping to account for new DataFrame indices
+        updated_mapping = {}
+        for old_idx, new_idx in enumerate(self.df.index):
+            if old_idx in merged_mapping:
+                updated_mapping[new_idx] = merged_mapping[old_idx]
+        
+        self.merged_mapping = updated_mapping
 
     def build_vocabulary(self):
         """Creates a consistent vocabulary across documents."""
