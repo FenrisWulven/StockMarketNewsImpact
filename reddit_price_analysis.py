@@ -154,5 +154,142 @@ def analyze_reddit_sentiment_vs_price():
     for stock, corr in sorted(correlations.items()):
         print(f"{stock}: {corr:.3f}")
 
+def calculate_reddit_lagged_correlations(stocks_close, daily_sentiment, max_lag_days=5):
+    """Calculate correlations between Reddit sentiment and price changes with different time lags"""
+    
+    # Filter for 2024 data
+    stocks_year = stocks_close[stocks_close['Date'].dt.year == 2024]
+    sentiment_year = daily_sentiment[daily_sentiment['timestamp'].dt.year == 2024]
+    
+    # Calculate daily returns
+    daily_returns = {}
+    for stock in stocks_close.columns[1:]:
+        daily_prices = stocks_year[stocks_year['Date'].dt.time == pd.Timestamp('16:00:00').time()][['Date', stock]]
+        daily_prices.set_index('Date', inplace=True)
+        daily_returns[stock] = daily_prices[stock].pct_change()
+    
+    # Stock mapping for sentiment data
+    stock_mapping = {
+        'AAPL': 'Apple',
+        'MSFT': 'Microsoft',
+        'NVDA': 'Nvidia',
+        'TSLA': 'Tesla',
+        'AMZN': 'Amazon',
+        'GOOGL': 'Google',
+        'META': 'Meta'
+    }
+    
+    # Calculate correlations for different lags
+    lag_correlations = {stock: [] for stock in stocks_close.columns[1:]}
+    
+    for lag in range(max_lag_days + 1):
+        for stock in stocks_close.columns[1:]:
+            company_name = stock_mapping[stock]
+            stock_sentiment = sentiment_year[sentiment_year['stock'] == company_name].copy()
+            
+            if len(stock_sentiment) > 0:
+                # Convert timestamp to date for proper alignment
+                stock_sentiment['date'] = stock_sentiment['timestamp'].dt.date
+                sentiment_series = stock_sentiment.groupby('date')['sentiment_score'].mean()
+                
+                # Convert returns index to date
+                returns_series = daily_returns[stock].copy()
+                returns_series.index = pd.to_datetime(returns_series.index).date
+                
+                # Shift sentiment forward (to predict future returns)
+                if lag > 0:
+                    sentiment_series = sentiment_series.shift(lag)
+                
+                # Align the series and calculate correlation
+                aligned_data = pd.DataFrame({
+                    'sentiment': sentiment_series,
+                    'returns': returns_series
+                })
+                aligned_data = aligned_data.dropna()
+                
+                if len(aligned_data) > 0:
+                    correlation = aligned_data['sentiment'].corr(aligned_data['returns'])
+                    lag_correlations[stock].append(correlation)
+                else:
+                    lag_correlations[stock].append(np.nan)
+            else:
+                lag_correlations[stock].append(np.nan)
+    
+    return lag_correlations
+
+def plot_reddit_lag_correlations(lag_correlations, max_lag_days=5):
+    """Plot correlation vs lag days for Reddit sentiment"""
+    plt.figure(figsize=(12, 8))
+    
+    for stock, correlations in lag_correlations.items():
+        plt.plot(range(max_lag_days + 1), correlations, marker='o', label=stock)
+    
+    plt.title('Reddit Sentiment-Price Change Correlations with Different Time Lags (2024)')
+    plt.xlabel('Lag (Days)')
+    plt.ylabel('Correlation Coefficient')
+    plt.grid(True)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    
+    # Save high-quality plot
+    plt.savefig('Figures/reddit_lag_correlations.jpg', dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # Generate LaTeX table
+    latex_table = (
+        "\\begin{table}[h!]\n"
+        "\\centering\n"
+        "\\caption{Reddit Sentiment-Price Correlations by Lag Days}\n"
+        "\\label{tab:reddit_lag_correlations}\n"
+        "\\begin{tabular}{l" + "r" * (max_lag_days + 1) + "}\n"
+        "\\hline\n"
+        "Stock & " + " & ".join([f"Lag {i}" for i in range(max_lag_days + 1)]) + " \\\\\n"
+        "\\hline\n"
+    )
+    
+    # Add data rows
+    for stock, correlations in sorted(lag_correlations.items()):
+        latex_table += f"{stock} & " + " & ".join([f"{corr:.3f}" for corr in correlations]) + " \\\\\n"
+    
+    latex_table += (
+        "\\hline\n"
+        "\\end{tabular}\n"
+        "\\end{table}\n"
+    )
+    
+    # Save LaTeX table
+    with open('Figures/reddit_lag_correlations_table.tex', 'w') as f:
+        f.write(latex_table)
+    
+    # Print correlations
+    print("\nReddit Sentiment-Price Correlations by lag days:")
+    for stock, correlations in sorted(lag_correlations.items()):
+        print(f"\n{stock}:")
+        for lag, corr in enumerate(correlations):
+            print(f"Lag {lag} days: {corr:.3f}")
+
 if __name__ == "__main__":
-    analyze_reddit_sentiment_vs_price() 
+    analyze_reddit_sentiment_vs_price()
+    
+    # Load data again for lag analysis
+    stocks_close = pd.read_csv("StockData/Googlefinance_stocks - Close_values.csv", skiprows=1)
+    stocks_close = stocks_close.iloc[:, [0,1,3,5,7,9,11,13]]
+    stocks_close.columns = ['Date', 'AAPL', 'MSFT', 'NVDA', 'TSLA', 'AMZN', 'GOOGL', 'META']
+    
+    # Convert price columns to float
+    for col in stocks_close.columns[1:]:
+        stocks_close[col] = stocks_close[col].str.replace(',', '.').astype(float)
+    
+    # Convert dates
+    stocks_close['Date'] = pd.to_datetime(
+        stocks_close['Date'].str.replace('.', ':'),
+        format='%d/%m/%Y %H:%M:%S'
+    )
+    
+    # Load Reddit sentiment data
+    reddit_sentiment = pd.read_csv(r"C:\Users\jbhan\Desktop\StockMarketNewsImpact\MarketNews\data\final\Reddit_2021_to_2024_with_sentiment.csv")
+    reddit_sentiment['timestamp'] = pd.to_datetime(reddit_sentiment['timestamp'])
+    
+    # Calculate lagged correlations
+    lag_correlations = calculate_reddit_lagged_correlations(stocks_close, reddit_sentiment)
+    plot_reddit_lag_correlations(lag_correlations) 
